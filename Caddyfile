@@ -1,0 +1,23 @@
+{
+    # On-Demand TLS の「証明書発行可否問い合わせ」はグローバル設定に書く
+    on_demand_tls {
+        # FastAPI(app) の ask エンドポイントへ
+        ask http://app:8000/_caddy/ask
+        # 共有トークンを使うなら .env の CADDY_ASK_SHARED_TOKEN に合わせて:
+        # ask http://app:8000/_caddy/ask?token=YOUR_SHARED_TOKEN
+    }
+}
+
+# http は全部 https へ
+:80 {
+    redir https://{host}{uri}
+}
+
+# https 仮想ホスト（SNIは任意、必要な証明書を都度取得）
+:443 {
+    tls {
+        on_demand
+    }
+    encode zstd gzip
+    reverse_proxy nginx:80
+}

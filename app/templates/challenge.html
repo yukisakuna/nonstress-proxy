@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Just a moment…</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;background:#0b0f14;color:#e5eef7}
+    .card{background:#111826;border:1px solid #1f2a37;padding:28px 24px;border-radius:16px;max-width:560px;width:92%}
+    h1{font-size:20px;margin:0 0 8px}
+    .sub{opacity:.8;font-size:14px;margin-bottom:14px}
+    .spinner{width:28px;height:28px;border-radius:50%;border:3px solid rgba(229,238,247,.2);border-top-color:#e5eef7;animation:spin 1s linear infinite;margin:16px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    code{background:#0b1220;padding:2px 6px;border-radius:6px}
+    .err{color:#ffb4c1}
+  </style>
+  <script src="{{ captcha_js_url }}" async defer></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Just a moment…</h1>
+    <div class="sub">ブラウザを確認しています。ページは自動で進みます。</div>
+    <div class="spinner"></div>
+    <div id="status" class="sub">トークン待機中…</div>
+    <noscript><div class="err">JavaScript を有効にしてください。</div></noscript>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const host = qs.get('host') || location.host;
+  const next = qs.get('next') || '/';
+  const statusEl = document.getElementById('status');
+
+  let tries = 0;
+
+  async function verify(token) {
+    statusEl.textContent = '検証中…';
+    try {
+      const res = await fetch('/_verify', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        credentials: 'same-origin',
+        body: JSON.stringify({ token, host, next })
+      });
+      const data = await res.json().catch(()=>({ok:false,error:'Bad JSON'}));
+      if (data.ok) {
+        statusEl.textContent = '通過しました。遷移中…';
+        location.replace(data.redirect_to || next);
+      } else {
+        statusEl.innerHTML = '検証失敗: <span class="err">'+ (data.error||'Unknown') +'</span>';
+        setTimeout(pollToken, 1200);
+      }
+    } catch (e) {
+      statusEl.innerHTML = '通信エラー: <span class="err">'+ (e && e.message ? e.message : e) +'</span>';
+      setTimeout(pollToken, 1200);
+    }
+  }
+
+  function pollToken(){
+    tries++;
+    try{
+      if (!window.nonstress || typeof window.nonstress.getToken !== 'function') {
+        statusEl.textContent = 'スクリプト初期化待ち…';
+        return setTimeout(pollToken, 500);
+      }
+      const token = window.nonstress.getToken();
+      if (token && token !== 'Failed') {
+        statusEl.textContent = 'トークン取得: 送信中…';
+        return verify(token);
+      }
+      if (token === 'Failed') {
+        statusEl.innerHTML = 'チャレンジ失敗（拡張機能/プライバシー設定/HTTPアクセスの可能性）。<br>別ブラウザ/シークレット/HTTPSで再試行してください。';
+      } else {
+        if (tries % 8 === 0) {
+          const isHttps = location.protocol === 'https:';
+          statusEl.textContent = 'トークン待機中… ' + (isHttps ? '' : '(HTTPで開いていませんか？HTTPS推奨)');
+        }
+      }
+    }catch(e){
+      statusEl.innerHTML = 'エラー: <span class="err">'+ (e && e.message ? e.message : e) +'</span>';
+    }
+    setTimeout(pollToken, 500);
+  }
+
+  setTimeout(pollToken, 600);
+})();
+</script>
+</body>
+</html>
