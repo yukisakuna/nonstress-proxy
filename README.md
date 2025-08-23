@@ -75,4 +75,5 @@ curl -u admin:changeme -X DELETE https://proxy.example.com/admin/upstreams/site.
 ## AIだと思いましたか？
 
 正解です！あなたは素晴らしい！
+
 このコードはGPT-5によって生成されました！
