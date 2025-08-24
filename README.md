@@ -43,7 +43,7 @@ DNS を対象ドメイン → サーバIP に向けておくこと。
 ### upstream 登録
 
 ```bash
-curl -u admin:changeme -X POST https://proxy.example.com/admin/upstreams \
+curl -u admin:changeme -X POST https://proxy.example.com/_proxy_admin/upstreams \
   -H "Content-Type: application/json" \
   -d '{"host":"site.example.com","upstream":"http://1.2.3.4:5000"}'
 ```
@@ -51,13 +51,13 @@ curl -u admin:changeme -X POST https://proxy.example.com/admin/upstreams \
 ### 確認
 
 ```bash
-curl -u admin:changeme https://proxy.example.com/admin/upstreams
+curl -u admin:changeme https://proxy.example.com/_proxy_admin/upstreams
 ```
 
 ### 削除
 
 ```bash
-curl -u admin:changeme -X DELETE https://proxy.example.com/admin/upstreams/site.example.com
+curl -u admin:changeme -X DELETE https://proxy.example.com/_proxy_admin/upstreams/site.example.com
 ```
 
 ---
