@@ -169,18 +169,18 @@ class UpsertBody(BaseModel):
     upstream: AnyHttpUrl
 
 
-@app.get("/admin/upstreams", dependencies=[Depends(require_admin)])
+@app.get("/_proxy_admin/upstreams", dependencies=[Depends(require_admin)])
 def list_upstreams():
     return store.all()
 
 
-@app.post("/admin/upstreams", dependencies=[Depends(require_admin)])
+@app.post("/_proxy_admin/upstreams", dependencies=[Depends(require_admin)])
 def upsert_upstream(body: UpsertBody):
     store.set(body.host, str(body.upstream))
     return {"ok": True, "data": store.all()}
 
 
-@app.delete("/admin/upstreams/{host}", dependencies=[Depends(require_admin)])
+@app.delete("/_proxy_admin/upstreams/{host}", dependencies=[Depends(require_admin)])
 def delete_upstream(host: str):
     deleted = store.delete(host)
     return {"ok": True, "deleted": bool(deleted), "data": store.all()}
@@ -320,6 +320,6 @@ def auth_for_nginx(request: Request):
 # -------------------------
 # Health
 # -------------------------
-@app.get("/_health")
+@app.get("/_proxy_health")
 def health():
     return {"ok": True}
