@@ -18,7 +18,7 @@ Client → Caddy(443, TLS) → Nginx(auth\_request) → FastAPI(app) → Upstrea
 
 ````
 
-- `/admin/upstreams` : 管理 API  
+- `/_proxy_admin/upstreams` : 管理 API  
 - `/_challenge` : チャレンジページ  
 - `/_verify` : CAPTCHA 検証  
 - `/_auth` : Nginx からの認可チェック  
