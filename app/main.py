@@ -313,8 +313,8 @@ def auth_for_nginx(request: Request):
         redir = f"/_challenge?host={host}&next={next_path}"
         return Response(status_code=401, headers={"X-Redirect": redir})
 
-    # 認可OK → Nginx に上流URLを渡す
-    return Response(status_code=204, headers={"X-Upstream": upstream})
+    # 認可OK → Nginx に上流URLを渡す（末尾のスラッシュを除去）
+    return Response(status_code=204, headers={"X-Upstream": upstream.rstrip("/")})
 
 
 # -------------------------
